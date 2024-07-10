@@ -6,7 +6,7 @@
 /*   By: asalo <asalo@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/18 09:47:10 by asalo             #+#    #+#             */
-/*   Updated: 2024/07/08 17:46:55 by asalo            ###   ########.fr       */
+/*   Updated: 2024/07/10 17:06:52 by asalo            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,86 +14,81 @@
 # define PHILO_H
 
 # include <pthread.h>
+# include <limits.h>
 # include <sys/time.h>
 # include <stdlib.h>
 # include <stdio.h>
 # include <unistd.h>
 
-/* ************** */
-/* Error messages */
-/* ************** */
-# define ALLOC_T "Failed allocating memory for threads"
-# define ALLOC_P "Failed allocating memory for philosophers"
-# define ALLOC_F "Failed allocating memory for forks"
-# define ARG_COUNT "Incorrect argument count."
-# define INPUT_FORMAT "Incorrect inut(s)."
-# define CREATE_TH "Failed creating thread(s)."
-# define JOIN_TH "Failed joining thread(s)."
-# define INIT_FORKS "Failed initializing forks."
-# define GET_TIME "UNABLE TO RETRIEVE TIME"
+/* ******* */
+/* Actions */
+/********* */
+# define EAT "is eating"
+# define DIE "died"
+# define THINK "is thinking"
+# define SLEEP "is sleeping"
 
-
-typedef	enum {
+/* ******* */
+/* Structs */
+/* ******* */
+typedef enum e_bool
+{
 	FALSE,
 	TRUE
-} e_bool;
+}	t_bool;
 
-struct	s_data;
-
-typedef struct		s_philo
+typedef struct s_data
 {
-	struct s_data	*data;/*should this be freed?*/
-	pthread_t		thread;
-	int				id;
-	int				meals_eaten;
-	int				status;
-	e_bool			eating;/*leaking??*/
-	long long		time_to_die;
-	pthread_mutex_t	lock;/*destroy*/
-	pthread_mutex_t	*right_fork;
-	pthread_mutex_t	*left_fork;
-}					t_philo;
+	int		philo_nb;
+	long long	start_time;
+	int		time_to_die;
+	int		time_to_eat;
+	int		time_to_sleep;
+	int		meal_goal;
+	int		meal_goal_total;
+	e_bool		is_processing;
+	pthread_mutex_t	writing;
+	pthread_mutex_t	meal_goal_total_mutex;
+	pthread_mutex_t	status_mutex;
+	pthread_mutex_t	timer_mutex;
+}	t_data;
 
-typedef struct		s_data
+typedef struct s_forks
 {
-	pthread_t		*t_id;/*free*/
-	int				philo_nb;
-	int				meal_goal;
-	int				dead;
-	int				done_eating;
-	t_philo			*philos;/*free*/
-	long long		death_time;
-	long long		eat_time;
-	long long		sleep_time;
-	long long		start_time;
-	pthread_mutex_t	*forks;/*destroy & free*/
-	pthread_mutex_t	lock;/*destroy*/
-	pthread_mutex_t	write;/*destroy*/
-}					t_data;
+	pthread_mutex_t	*right;
+	pthread_mutex_t	*left;
+}	t_forks;
 
+typedef struct s_philo
+{
+	pthread_t	t_id;
+	t_forks		forks;
+	t_data		*data;
+	int		index;
+	int		eating_nbr;
+	long long	last_meal;
+	void		*next;
+	pthread_mutex_t	last_meal_mutex;
+}	t_philo;
 
 /* ********* */
 /* Functions */
 /* ********* */
-void		clean_exit(t_data *data);
-void		clear_data(t_data *data);
-int			error(char *s, t_data *data);
-
+void		write_error(char *s);
+t_philo		*launcher(int ac, char **av);
 long long	get_time(void);
-int			better_sleep(unsigned int time);
-
-int			init_forks(t_data *data);
-void		init_philos(t_data *data);
-int			init_data(int ac, char **av, t_data *data);
-
-void		print_status(char *s, t_philo *philo);
-void		take_forks(t_philo *philo);
-void		drop_forks(t_philo *philo);
-void		eat(t_philo *philo);
-
-void		*monitor(void *data_ptr);
-void		*mortality(void *philo_ptr);
-void		*philo_process(void *philo_ptr);
-int			launch_threads(t_data *data);
+/*void				philos_lister(t_philo *philo, t_philo *head);*/
+void		join_and_clean(t_philo *philo);
+int		ft_sleep(t_philo *philo, long long time, char *action);
+/*int					sleeping(long long time, t_philo *philos);*/
+int		print_act(t_philo *philos, char *action);
+int		put_forks_down(pthread_mutex_t *right, pthread_mutex_t *left);
+int		pickup_forks(t_philo *philo);
+int		eat(t_philo *philo);
+/*int					_sleep(t_philo *philo);*/
+e_bool		ft_is_processing(t_philo *philos, char method, e_bool new_value);
+long long	ft_last_meal(t_philo *philos, char method, long long new_value);
+int		ft_total_meals(t_philo *philos, char method, int new_value);
+/*int					better_sleep(t_philo *philo);*/
 
 #endif

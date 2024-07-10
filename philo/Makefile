@@ -6,7 +6,7 @@
 #    By: asalo <asalo@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/07/06 19:31:39 by asalo             #+#    #+#              #
-#    Updated: 2024/07/08 16:33:40 by asalo            ###   ########.fr        #
+#    Updated: 2024/07/10 16:39:48 by asalo            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -14,7 +14,7 @@ NAME	= philo
 SRC_DIR	= src
 OBJ_DIR = obj
 
-SRCS	= $(addprefix $(SRC_DIR)/, actions.c init.c launch.c utils.c clean_exit.c) \
+SRCS	= $(addprefix $(SRC_DIR)/, actions.c init.c manage.c utils.c clean_exit.c) \
 			$(addprefix $(SRC_DIR)/, main.c)
 OBJ		= $(subst $(SRC_DIR), $(OBJ_DIR), $(SRCS:.c=.o))
 

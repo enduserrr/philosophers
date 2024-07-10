@@ -6,82 +6,78 @@
 /*   By: asalo <asalo@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/18 09:51:21 by asalo             #+#    #+#             */
-/*   Updated: 2024/07/08 17:38:44 by asalo            ###   ########.fr       */
+/*   Updated: 2024/07/10 16:51:26 by asalo            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../incs/philo.h"
 
-static int	one_philo(t_data *data)
+static int better_sleep(t_philo *philo)
 {
-	data->start_time = get_time();
-	if (pthread_create(&data->t_id[0], NULL, &philo_process, &data->philos[0]))
-		return (error("CREATE_TH", data));
-	pthread_detach(data->t_id[0]);
-	while (data->dead == 0)
-		usleep(0);
-	clean_exit(data);
-	return (0);
+	return (ft_sleep(philo, philo->data->time_to_sleep, SLEEP));
 }
 
-static int	allocate(t_data *data)
+static void	philo_checker(t_philo *philo, t_philo *first)
 {
-	data->t_id = malloc(sizeof(pthread_t) * data->philo_nb);
-	if (!data->t_id)
-		return (error(ALLOC_T, data));
-	data->forks = malloc(sizeof(pthread_mutex_t) * data->philo_nb);
-	if (!data->forks)
-		return (error(ALLOC_F, data));
-	data->philos = malloc(sizeof(t_philo) * data->philo_nb);
-	if (!data->philos)
-		return (error(ALLOC_P, data));
-	return (0);
-}
+	e_bool	is_processing;
 
-static int invalid_input(int ac, char **av)
-{
-	int	i;
-	int	j;
-
-	i = 1;
-	if (ac < 5 || ac > 6)
-		return (error("ARG_COUNT", NULL));
-	while (av[i])
+	is_processing = TRUE;
+	usleep(4000);
+	while (is_processing)
 	{
-		j = 0;
-		while (av[i][j])
+		if (get_time() - ft_last_meal(philo, 'g', 0) > philo->data->time_to_die)
 		{
-			if (av[i][j] == ' ')
-			{
-				j++;
-				continue ;
-			}
-			if (av[i][j] < 48 || av[i][j] > 57)
-				return (error("INPUT_FORMAT", NULL));
-			j++;
+			ft_is_processing(philo, 's', FALSE);
+			pthread_mutex_lock(&philo->data->writing);
+			printf("%lld %d %s\n", get_time() - philo->data->start_time, philo->index,
+				DIE);
+			pthread_mutex_unlock(&philo->data->writing);
 		}
-		i++;
+		philo = philo->next;
+		if (philo == NULL)
+			philo = first;
+		is_processing = ft_is_processing(philo, 'g', FALSE);
 	}
-	return (0);
+}
+
+void	*routine(void *philo)
+{
+	if (((t_philo *)philo)->index % 2 == 0)
+		better_sleep((t_philo *)philo);
+	while (1)
+	{
+		if (print_act((t_philo *)philo, THINK) == 1)
+			break ;
+		if (pickup_forks((t_philo *)philo) == 1)
+			break ;
+		if (eat((t_philo *)philo) == 1)
+			break ;
+		if (better_sleep((t_philo *)philo) == 1)
+			break ;
+	}
+	return (NULL);
 }
 
 int	main(int ac, char **av)
 {
-	t_data	data;/*Allocate for data struct?*/
+	t_philo	*philo;
+	t_philo	*tmp;
 
-	if (invalid_input(ac, av))
+	if (ac != 5 && ac != 6)
+		return (write_error("Incorrect argument count"), 1);
+	philo = launcher(ac, av);
+	if (philo == NULL)
 		return (1);
-	if (init_data(ac, av, &data))
-		return (1);
-	if (allocate(&data))
-		return (1);
-	if (init_forks(&data))
-		return (1);
-	init_philos(&data);
-	if (data.philo_nb == 1)
-		return (one_philo(&data));
-	if (launch_threads(&data))
-		return (1);
-	clean_exit(&data);
+	tmp = philo;
+	tmp->data->start_time = get_time();
+	while (tmp)
+	{
+		if ((pthread_create(&tmp->t_id, NULL, &routine, tmp)))
+			break ;
+		tmp = tmp->next;
+	}
+	tmp = philo;
+	philo_checker(tmp, philo);
+	join_and_clean(philo);
 	return (0);
 }

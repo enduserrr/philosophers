@@ -6,13 +6,13 @@
 /*   By: asalo <asalo@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/06 14:14:52 by asalo             #+#    #+#             */
-/*   Updated: 2024/07/08 17:50:53 by asalo            ###   ########.fr       */
+/*   Updated: 2024/07/10 14:04:58 by asalo            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../incs/philo.h"
 
-static void	write_error(char *s)
+void	write_error(char *s)
 {
 	int i;
 
@@ -24,35 +24,25 @@ static void	write_error(char *s)
 	write(2, "\n", 1);
 }
 
-void	clean_exit(t_data *data)
+void	join_and_clean(t_philo *philo)
 {
-	int	i;
+	t_philo	*tmp;
+	t_philo	*prev;
 
-	i = -1;
-	while (++i < data->philo_nb)
+	tmp = philo;
+	while (tmp)
 	{
-		pthread_mutex_destroy(&data->forks[i]);
-		pthread_mutex_destroy(&data->philos[i].lock);
+		pthread_join(tmp->t_id, NULL);
+		tmp = tmp->next;
 	}
-	pthread_mutex_destroy(&data->write);
-	pthread_mutex_destroy(&data->lock);
-	clear_data(data);
+	free(philo->data);
+	tmp = philo;
+	while (tmp)
+	{
+		prev = tmp;
+		free(prev->forks.right);
+		tmp = tmp->next;
+		free(prev);
+	}
 }
 
-void	clear_data(t_data *data)
-{
-	if (data->t_id)
-		free(data->t_id);
-	if (data->forks)
-		free(data->forks);
-	if (data->philos)
-		free(data->philos);
-}
-
-int	error(char *s, t_data *data)
-{
-	write_error(s);
-	if (data)
-		clean_exit(data);
-	return (1);
-}

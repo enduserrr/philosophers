@@ -6,93 +6,134 @@
 /*   By: asalo <asalo@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/18 10:05:45 by asalo             #+#    #+#             */
-/*   Updated: 2024/07/08 17:01:49 by asalo            ###   ########.fr       */
+/*   Updated: 2024/07/10 16:36:30 by asalo            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../incs/philo.h"
 
-static long	ft_atoll(const char *s)/*Meaby change to unsigned or make a check if the nb < 0*/
+static int	ft_atoi(const char *s)
 {
-	long	res;
-	int		sign;
+	unsigned long long	res;
 
 	res = 0;
-	sign = 1;
 	if (!s)
 		return (0);
 	while (*s == ' ' || (*s >= 9 && *s <= 13))
 		s++;
-	if (*s == '+' || *s == '-')
+	if (*s == '-')
+		return (-1);
+	if (*s == '0')
 	{
-		if (*s == '-')
-			sign = -sign;
+		res = 0;
+		return (res);
+	}
+	while (*s)
+	{
+		if (*s >= '0' && *s <= '9')
+			res = res * 10 + *s - '0'; 
+		if (*s < '0' || *s > '9')
+			return (-1);
 		s++;
 	}
-	while (*s >= '0' && *s <= '9')
-	{
-		if (res > 2147483647 || res < -2147483648)
-			return (-1);
-		res = res * 10 + *s - '0';
-		s++; 
-	}
-	return ((long long)(sign * res));
+	if (res > 2147483647)
+		return (-1);
+	return (res);
 }
 
-int	init_forks(t_data *data)
-{
-	int	i;
 
-	i = -1;
-	while (++i < data->philo_nb)
-		pthread_mutex_init(&data->forks[i], NULL);
-	i = 0;
-	data->philos[0].left_fork = &data->forks[0];
-	data->philos[0].right_fork = &data->forks[data->philo_nb - 1];
-	i = 1;
-	while (i < data->philo_nb)
-	{
-		data->philos[i].left_fork = &data->forks[i];
-		data->philos[i].right_fork = &data->forks[i - 1];
-		i++;
-	}
-	return (0);
+t_philo	*init_philo(t_data *data, int i)
+{
+	t_philo	*philo;
+
+	philo = (t_philo *)malloc(sizeof(t_philo));
+	if (!philo)
+		return (NULL);
+	philo->data = data;
+	philo->last_meal = get_time();
+	philo->index = i + 1;
+	philo->eating_nbr = 0;
+	philo->forks.right = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t));
+	if (!philo->forks.right)
+		return (free(philo), NULL);
+	if (pthread_mutex_init(&philo->last_meal_mutex, NULL))
+		return (free(philo), free(philo->forks.right), NULL);
+	if (pthread_mutex_init(philo->forks.right, NULL))
+		return (free(philo), free(philo->forks.right), NULL);
+	return (philo);
 }
 
-void	init_philos(t_data *data)
+t_data	*get_data(int ac, char **av)
 {
-	int	i;
+	t_data	*data;
 
-	i = 0;
-	while (i < data->philo_nb)
-	{
-		data->philos[i].data = data;
-		data->philos[i].id = i + 1;
-		data->philos[i].time_to_die = data->death_time;
-		data->philos[i].meals_eaten = 0;
-		data->philos[i].eating = 0;
-		data->philos[i].status = 0;
-		pthread_mutex_init(&data->philos[i].lock, NULL);
-		i++;
-	}
-}
-
-int	init_data(int ac, char **av, t_data *data)
-{
-	data->philo_nb = (int) ft_atoll(av[1]);
-	data->death_time = ft_atoll(av[2]);
-	data->eat_time = ft_atoll(av[3]);
-	data->sleep_time = ft_atoll(av[4]);
+	data = malloc(sizeof(t_data));
+	if (!data)
+		return (NULL);
+	data->philo_nb = ft_atoi(av[1]);
+	data->time_to_die = ft_atoi(av[2]);
+	data->time_to_eat = ft_atoi(av[3]);
+	data->time_to_sleep = ft_atoi(av[4]);
 	if (ac == 6)
-		data->meal_goal = (int) ft_atoll(av[5]);
+		data->meal_goal = ft_atoi(av[5]);
 	else
 		data->meal_goal = -1;
-	if (data->philo_nb <= 0 || data->philo_nb > 200 || data->death_time <= 0
-		|| data->eat_time <= 0 || data->sleep_time <= 0)
-		return (error("INPUT_FORMAT", NULL));
-	data->dead = 0;
-	data->done_eating = 0;
-	pthread_mutex_init(&data->write, NULL);
-	pthread_mutex_init(&data->lock, NULL);
-	return (0);
+	if (data->philo_nb > 200 || data->philo_nb < 1 || data->time_to_die < 60
+		|| data->time_to_eat < 60 || data->time_to_sleep < 60)
+		return (write_error("Incorrect input"), free(data), NULL);
+	return (data);
+}
+
+t_philo	*create_philos(t_data *data)
+{
+	t_philo	*philo;
+	t_philo	*head;
+	t_philo	*prev;
+	int		i;
+
+	prev = NULL;
+	head = NULL;
+	i = 0;
+	while (i < data->philo_nb)
+	{
+		philo = init_philo(data, i);
+		if (philo == NULL)
+			return (NULL);
+		if (i == 0)
+			head = philo;
+		else
+		{
+			prev->next = philo;
+			philo->forks.left = prev->forks.right;
+		}
+		prev = philo;
+		i++;
+	}
+	head->forks.left = prev->forks.right;
+	return (prev->next = NULL, head);
+}
+
+t_philo	*launcher(int ac, char **av)
+{
+	t_philo	*philo;
+	t_data	*data;
+
+	data = get_data(ac, av);
+	if (data == NULL || data->meal_goal == 0)
+		return (NULL);
+	data->is_processing = TRUE;
+	data->meal_goal_total = data->meal_goal * data->philo_nb;
+	if ((pthread_mutex_init(&data->status_mutex, NULL)))
+		return (NULL);
+	if ((pthread_mutex_init(&data->timer_mutex, NULL)))
+		return (NULL);
+	if ((pthread_mutex_init(&data->writing, NULL)))
+		return (NULL);
+	if ((pthread_mutex_init(&data->meal_goal_total_mutex, NULL)))
+		return (NULL);
+	data->start_time = get_time();
+	philo = create_philos(data);
+	if (philo == NULL)
+		return (free(data), NULL);
+	return (philo);
 }

@@ -6,53 +6,43 @@
 /*   By: asalo <asalo@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/06 14:10:25 by asalo             #+#    #+#             */
-/*   Updated: 2024/07/08 16:53:53 by asalo            ###   ########.fr       */
+/*   Updated: 2024/07/10 16:51:33 by asalo            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../incs/philo.h"
 
-static int ft_strcmp(char *s1, char *s2)
-{
-	int	i;
-
-	i = 0;
-	while (s1[i] && (s1[i] == s2[i]))
-		i++;
-	return (*(char *)s1 - *(char *)s2);
-}
-
-long long	get_time(void)/*change to long long*/
-{
-	struct timeval	tv;
-
-	if (gettimeofday(&tv, NULL))
-		return (error("gettimeofday() ERROR\n", NULL));
-	return ((tv.tv_sec * (long long)1000) + (tv.tv_usec / 1000));
-}
-
-int better_sleep(unsigned int time)
+static void	smart_sleep(unsigned int time)
 {
 	long long	start;
-
 	start = get_time();
 	while ((get_time() - start) < time)
 		usleep(time / 10);
-	return (0);
 }
 
-void	print_status(char *s, t_philo *philo)
+long long	get_time(void)
 {
-	unsigned long long	time;
+	struct timeval	tv;
 
-	pthread_mutex_lock(&philo->data->write);
-	time = get_time() - philo->data->start_time;
-	if (ft_strcmp("died", s) == 0 && philo->data->dead == 0)
+	gettimeofday(&tv, NULL);
+	return (tv.tv_sec * 1000 + tv.tv_usec / 1000);
+}
+
+int	ft_sleep(t_philo *philo, long long time, char *action)
+{
+	e_bool		status;/*what's the point?*/
+	long long	timer;
+
+	if (print_act(philo, action) == 1)
+		return (1);
+	status = TRUE;
+	timer = get_time();
+	while (status)
 	{
-		printf("%llu %d %s\n", time, philo->id, s);
-		philo->data->dead = 1;
+		if (get_time() - timer >= time)
+			break ;
+		status = ft_is_processing(philo, 'g', FALSE);
+		smart_sleep(50);
 	}
-	if (!philo->data->dead)
-		printf("%llu %d %s\n",  time, philo->id, s);
-	pthread_mutex_unlock(&philo->data->write);
+	return (0);
 }
