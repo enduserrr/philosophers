@@ -6,13 +6,13 @@
 /*   By: asalo <asalo@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/18 09:51:21 by asalo             #+#    #+#             */
-/*   Updated: 2024/07/10 18:08:11 by asalo            ###   ########.fr       */
+/*   Updated: 2024/07/10 20:15:54 by asalo            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../incs/philo.h"
 
-static int	sleep_check(t_philo *philo)
+static int	sleep_frame(t_philo *philo)
 {
 	return (ft_sleep(philo, philo->data->time_to_sleep, SLEEP));
 }
@@ -27,7 +27,7 @@ static void	philo_checker(t_philo *philo, t_philo *first)
 	{
 		if (get_time() - ft_last_meal(philo, 'g', 0) > philo->data->time_to_die)
 		{
-			ft_is_processing(philo, 's', FALSE);
+			ft_is_processing(philo, 'u', FALSE);
 			pthread_mutex_lock(&philo->data->writing);
 			printf("%lld %d %s\n", get_time() - philo->data->start_time,
 				philo->index, DIE);
@@ -40,10 +40,15 @@ static void	philo_checker(t_philo *philo, t_philo *first)
 	}
 }
 
-static void	*routine(void *philo)
+/**
+ * Function checking when to break philo loop.
+ * First if() checks for philos with even index nb and put's them to sleep.
+ * Next while(1) starts and let's the process run over until it's broken.
+ */
+static void	*philo_routine(void *philo)
 {
 	if (((t_philo *)philo)->index % 2 == 0)
-		sleep_check((t_philo *)philo);
+		sleep_frame((t_philo *)philo);
 	while (1)
 	{
 		if (print_act((t_philo *)philo, THINK) == 1)
@@ -52,7 +57,7 @@ static void	*routine(void *philo)
 			break ;
 		if (eat((t_philo *)philo) == 1)
 			break ;
-		if (sleep_check((t_philo *)philo) == 1)
+		if (sleep_frame((t_philo *)philo) == 1)
 			break ;
 	}
 	return (NULL);
@@ -72,7 +77,7 @@ int	main(int ac, char **av)
 	tmp->data->start_time = get_time();
 	while (tmp)
 	{
-		if ((pthread_create(&tmp->t_id, NULL, &routine, tmp)))
+		if ((pthread_create(&tmp->t_id, NULL, &philo_routine, tmp)))
 			break ;
 		tmp = tmp->next;
 	}

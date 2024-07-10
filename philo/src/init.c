@@ -6,7 +6,7 @@
 /*   By: asalo <asalo@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/18 10:05:45 by asalo             #+#    #+#             */
-/*   Updated: 2024/07/10 18:00:48 by asalo            ###   ########.fr       */
+/*   Updated: 2024/07/10 20:14:50 by asalo            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,7 +51,7 @@ t_philo	*init_philo(t_data *data, int i)
 	philo->data = data;
 	philo->last_meal = get_time();
 	philo->index = i + 1;
-	philo->eating_nbr = 0;
+	philo->eat_count = 0;
 	philo->forks.right = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t));
 	if (!philo->forks.right)
 		return (write_error(ALLOC), free(philo), NULL);
@@ -105,13 +105,13 @@ t_data	*get_data(int ac, char **av)
 	if (ac == 6)
 	{
 		data->meal_goal = ft_atoi(av[5]);
-		if (data->meal_goal == 0)
+		if (data->meal_goal < 0)
 			return (write_error(INPUT), NULL);
 	}
 	else
 		data->meal_goal = -1;
-	if (data->philo_nb > 200 || data->philo_nb < 1 || data->time_to_die < 60
-		|| data->time_to_eat < 60 || data->time_to_sleep < 60)
+	if (data->philo_nb > 200 || data->philo_nb < 0 || data->time_to_die < 0
+		|| data->time_to_eat < 0 || data->time_to_sleep < 0)
 		return (write_error(INPUT), free(data), NULL);
 	return (data);
 }

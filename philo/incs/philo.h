@@ -6,7 +6,7 @@
 /*   By: asalo <asalo@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/18 09:47:10 by asalo             #+#    #+#             */
-/*   Updated: 2024/07/10 18:02:56 by asalo            ###   ########.fr       */
+/*   Updated: 2024/07/10 19:53:03 by asalo            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,7 @@
 # define ALLOC "Memory allocation fail."
 
 /* Action msg */
+# define FORK "has taken a fork"
 # define EAT "is eating"
 # define DIE "died"
 # define THINK "is thinking"
@@ -68,7 +69,7 @@ typedef struct s_philo
 	t_forks			forks;
 	t_data			*data;
 	int				index;
-	int				eating_nbr;
+	int				eat_count;
 	long long		last_meal;
 	void			*next;
 	pthread_mutex_t	last_meal_mutex;
@@ -87,8 +88,8 @@ int					forks_down(pthread_mutex_t *right, pthread_mutex_t *left);
 int					forks_up(t_philo *philo);
 int					eat(t_philo *philo);
 
-t_bool				ft_is_processing(t_philo *philos, char method, t_bool n_w);
-long long			ft_last_meal(t_philo *philos, char method, long long n_w);
-int					ft_total_meals(t_philo *philos, char method, int n_w);
+t_bool				ft_is_processing(t_philo *philos, char task, t_bool n_w);
+long long			ft_last_meal(t_philo *philos, char task, long long n_w);
+int					ft_total_meals(t_philo *philos, char task, int n_w);
 
 #endif
