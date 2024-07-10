@@ -6,20 +6,20 @@
 /*   By: asalo <asalo@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/18 09:51:21 by asalo             #+#    #+#             */
-/*   Updated: 2024/07/10 16:51:26 by asalo            ###   ########.fr       */
+/*   Updated: 2024/07/10 18:08:11 by asalo            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../incs/philo.h"
 
-static int better_sleep(t_philo *philo)
+static int	sleep_check(t_philo *philo)
 {
 	return (ft_sleep(philo, philo->data->time_to_sleep, SLEEP));
 }
 
 static void	philo_checker(t_philo *philo, t_philo *first)
 {
-	e_bool	is_processing;
+	t_bool	is_processing;
 
 	is_processing = TRUE;
 	usleep(4000);
@@ -29,8 +29,8 @@ static void	philo_checker(t_philo *philo, t_philo *first)
 		{
 			ft_is_processing(philo, 's', FALSE);
 			pthread_mutex_lock(&philo->data->writing);
-			printf("%lld %d %s\n", get_time() - philo->data->start_time, philo->index,
-				DIE);
+			printf("%lld %d %s\n", get_time() - philo->data->start_time,
+				philo->index, DIE);
 			pthread_mutex_unlock(&philo->data->writing);
 		}
 		philo = philo->next;
@@ -40,19 +40,19 @@ static void	philo_checker(t_philo *philo, t_philo *first)
 	}
 }
 
-void	*routine(void *philo)
+static void	*routine(void *philo)
 {
 	if (((t_philo *)philo)->index % 2 == 0)
-		better_sleep((t_philo *)philo);
+		sleep_check((t_philo *)philo);
 	while (1)
 	{
 		if (print_act((t_philo *)philo, THINK) == 1)
 			break ;
-		if (pickup_forks((t_philo *)philo) == 1)
+		if (forks_up((t_philo *)philo) == 1)
 			break ;
 		if (eat((t_philo *)philo) == 1)
 			break ;
-		if (better_sleep((t_philo *)philo) == 1)
+		if (sleep_check((t_philo *)philo) == 1)
 			break ;
 	}
 	return (NULL);
@@ -64,7 +64,7 @@ int	main(int ac, char **av)
 	t_philo	*tmp;
 
 	if (ac != 5 && ac != 6)
-		return (write_error("Incorrect argument count"), 1);
+		return (write_error(ARGC), 1);
 	philo = launcher(ac, av);
 	if (philo == NULL)
 		return (1);

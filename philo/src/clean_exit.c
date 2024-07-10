@@ -14,7 +14,7 @@
 
 void	write_error(char *s)
 {
-	int i;
+	int	i;
 
 	i = 0;
 	while (s[i])
@@ -45,4 +45,3 @@ void	join_and_clean(t_philo *philo)
 		free(prev);
 	}
 }
-

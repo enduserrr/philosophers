@@ -6,7 +6,7 @@
 /*   By: asalo <asalo@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/18 10:05:45 by asalo             #+#    #+#             */
-/*   Updated: 2024/07/10 16:36:30 by asalo            ###   ########.fr       */
+/*   Updated: 2024/07/10 18:00:48 by asalo            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ static int	ft_atoi(const char *s)
 	while (*s)
 	{
 		if (*s >= '0' && *s <= '9')
-			res = res * 10 + *s - '0'; 
+			res = res * 10 + *s - '0';
 		if (*s < '0' || *s > '9')
 			return (-1);
 		s++;
@@ -41,58 +41,36 @@ static int	ft_atoi(const char *s)
 	return (res);
 }
 
-
 t_philo	*init_philo(t_data *data, int i)
 {
 	t_philo	*philo;
 
 	philo = (t_philo *)malloc(sizeof(t_philo));
 	if (!philo)
-		return (NULL);
+		return (write_error(ALLOC), NULL);
 	philo->data = data;
 	philo->last_meal = get_time();
 	philo->index = i + 1;
 	philo->eating_nbr = 0;
 	philo->forks.right = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t));
 	if (!philo->forks.right)
-		return (free(philo), NULL);
+		return (write_error(ALLOC), free(philo), NULL);
 	if (pthread_mutex_init(&philo->last_meal_mutex, NULL))
-		return (free(philo), free(philo->forks.right), NULL);
+		return (write_error(MTX), free(philo), free(philo->forks.right), NULL);
 	if (pthread_mutex_init(philo->forks.right, NULL))
-		return (free(philo), free(philo->forks.right), NULL);
+		return (write_error(MTX), free(philo), free(philo->forks.right), NULL);
 	return (philo);
-}
-
-t_data	*get_data(int ac, char **av)
-{
-	t_data	*data;
-
-	data = malloc(sizeof(t_data));
-	if (!data)
-		return (NULL);
-	data->philo_nb = ft_atoi(av[1]);
-	data->time_to_die = ft_atoi(av[2]);
-	data->time_to_eat = ft_atoi(av[3]);
-	data->time_to_sleep = ft_atoi(av[4]);
-	if (ac == 6)
-		data->meal_goal = ft_atoi(av[5]);
-	else
-		data->meal_goal = -1;
-	if (data->philo_nb > 200 || data->philo_nb < 1 || data->time_to_die < 60
-		|| data->time_to_eat < 60 || data->time_to_sleep < 60)
-		return (write_error("Incorrect input"), free(data), NULL);
-	return (data);
 }
 
 t_philo	*create_philos(t_data *data)
 {
 	t_philo	*philo;
-	t_philo	*head;
+	t_philo	*first;
 	t_philo	*prev;
 	int		i;
 
 	prev = NULL;
-	head = NULL;
+	first = NULL;
 	i = 0;
 	while (i < data->philo_nb)
 	{
@@ -100,7 +78,7 @@ t_philo	*create_philos(t_data *data)
 		if (philo == NULL)
 			return (NULL);
 		if (i == 0)
-			head = philo;
+			first = philo;
 		else
 		{
 			prev->next = philo;
@@ -109,8 +87,33 @@ t_philo	*create_philos(t_data *data)
 		prev = philo;
 		i++;
 	}
-	head->forks.left = prev->forks.right;
-	return (prev->next = NULL, head);
+	first->forks.left = prev->forks.right;
+	return (prev->next = NULL, first);
+}
+
+t_data	*get_data(int ac, char **av)
+{
+	t_data	*data;
+
+	data = malloc(sizeof(t_data));
+	if (!data)
+		return (write_error(ALLOC), NULL);
+	data->philo_nb = ft_atoi(av[1]);
+	data->time_to_die = ft_atoi(av[2]);
+	data->time_to_eat = ft_atoi(av[3]);
+	data->time_to_sleep = ft_atoi(av[4]);
+	if (ac == 6)
+	{
+		data->meal_goal = ft_atoi(av[5]);
+		if (data->meal_goal == 0)
+			return (write_error(INPUT), NULL);
+	}
+	else
+		data->meal_goal = -1;
+	if (data->philo_nb > 200 || data->philo_nb < 1 || data->time_to_die < 60
+		|| data->time_to_eat < 60 || data->time_to_sleep < 60)
+		return (write_error(INPUT), free(data), NULL);
+	return (data);
 }
 
 t_philo	*launcher(int ac, char **av)
@@ -123,14 +126,12 @@ t_philo	*launcher(int ac, char **av)
 		return (NULL);
 	data->is_processing = TRUE;
 	data->meal_goal_total = data->meal_goal * data->philo_nb;
-	if ((pthread_mutex_init(&data->status_mutex, NULL)))
-		return (NULL);
-	if ((pthread_mutex_init(&data->timer_mutex, NULL)))
-		return (NULL);
+	if ((pthread_mutex_init(&data->process_state, NULL)))
+		return (write_error(MTX), NULL);
 	if ((pthread_mutex_init(&data->writing, NULL)))
 		return (NULL);
 	if ((pthread_mutex_init(&data->meal_goal_total_mutex, NULL)))
-		return (NULL);
+		return (write_error(MTX), NULL);
 	data->start_time = get_time();
 	philo = create_philos(data);
 	if (philo == NULL)

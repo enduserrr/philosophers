@@ -6,7 +6,7 @@
 /*   By: asalo <asalo@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/06 14:10:25 by asalo             #+#    #+#             */
-/*   Updated: 2024/07/10 16:51:33 by asalo            ###   ########.fr       */
+/*   Updated: 2024/07/10 17:31:16 by asalo            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 static void	smart_sleep(unsigned int time)
 {
 	long long	start;
+
 	start = get_time();
 	while ((get_time() - start) < time)
 		usleep(time / 10);
@@ -30,8 +31,8 @@ long long	get_time(void)
 
 int	ft_sleep(t_philo *philo, long long time, char *action)
 {
-	e_bool		status;/*what's the point?*/
 	long long	timer;
+	t_bool		status;
 
 	if (print_act(philo, action) == 1)
 		return (1);

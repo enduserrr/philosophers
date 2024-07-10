@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   print_act.c                                          :+:      :+:    :+:   */
+/*   actions.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: asalo <asalo@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/21 14:19:10 by asalo             #+#    #+#             */
-/*   Updated: 2024/07/10 13:42:35 by asalo            ###   ########.fr       */
+/*   Updated: 2024/07/10 17:35:14 by asalo            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,9 +18,9 @@ int	print_act(t_philo *philos, char *action)
 
 	pthread_mutex_lock(&philos->data->writing);
 	if (ft_is_processing(philos, 'g', FALSE))
-	{/*gets the philo nb and action from philo list*/
-		printf("%lld %d %s\n", get_time() - philos->data->start_time, \
-				philos->index, action);
+	{
+		printf("%lld %d %s\n", get_time() - philos->data->start_time,
+			philos->index, action);
 		status = 0;
 	}
 	else
@@ -29,7 +29,7 @@ int	print_act(t_philo *philos, char *action)
 	return (status);
 }
 
-int	put_forks_down(pthread_mutex_t *right, pthread_mutex_t *left)
+int	forks_down(pthread_mutex_t *right, pthread_mutex_t *left)
 {
 	if (right != NULL)
 		pthread_mutex_unlock(left);
@@ -38,7 +38,7 @@ int	put_forks_down(pthread_mutex_t *right, pthread_mutex_t *left)
 	return (0);
 }
 
-int	pickup_forks(t_philo *philo)
+int	forks_up(t_philo *philo)
 {
 	pthread_mutex_lock(philo->forks.right);
 	if (print_act(philo, "has taken a fork") == 1)
@@ -55,7 +55,7 @@ int	pickup_forks(t_philo *philo)
 	pthread_mutex_lock(philo->forks.left);
 	if (print_act(philo, "has taken a fork") == 1)
 	{
-		put_forks_down(philo->forks.right, philo->forks.left);
+		forks_down(philo->forks.right, philo->forks.left);
 		return (1);
 	}
 	return (0);
@@ -66,15 +66,15 @@ int	eat(t_philo *philo)
 	ft_last_meal(philo, 's', get_time());
 	if (print_act(philo, EAT) == 1)
 	{
-		put_forks_down(philo->forks.right, philo->forks.left);
+		forks_down(philo->forks.right, philo->forks.left);
 		return (1);
 	}
 	if (ft_sleep(philo, philo->data->time_to_eat, SLEEP) == 1)
 	{
-		put_forks_down(philo->forks.right, philo->forks.left);
+		forks_down(philo->forks.right, philo->forks.left);
 		return (1);
 	}
-	put_forks_down(philo->forks.right, philo->forks.left);
+	forks_down(philo->forks.right, philo->forks.left);
 	if (philo->data->meal_goal != -1)
 	{
 		if (philo->eating_nbr != philo->data->meal_goal)
