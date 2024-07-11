@@ -6,7 +6,7 @@
 /*   By: asalo <asalo@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/18 09:47:10 by asalo             #+#    #+#             */
-/*   Updated: 2024/07/10 19:53:03 by asalo            ###   ########.fr       */
+/*   Updated: 2024/07/11 11:10:37 by asalo            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,21 +75,24 @@ typedef struct s_philo
 	pthread_mutex_t	last_meal_mutex;
 }					t_philo;
 
-/* Functions */
-void				write_error(char *s);
-t_philo				*launcher(int ac, char **av);
+/* Utils */
 long long			get_time(void);
-
-void				join_and_clean(t_philo *philo);
+int					put_action(t_philo *philos, char *action);
 int					ft_sleep(t_philo *philo, long long time, char *action);
 
-int					print_act(t_philo *philos, char *action);
+/*Exit and cleaning*/
+void				write_error(char *s);
+void				join_and_clean(t_philo *philo);
+
+/* Actions */
 int					forks_down(pthread_mutex_t *right, pthread_mutex_t *left);
 int					forks_up(t_philo *philo);
 int					eat(t_philo *philo);
+t_philo				*launcher(int ac, char **av);
 
-t_bool				ft_is_processing(t_philo *philos, char task, t_bool n_w);
-long long			ft_last_meal(t_philo *philos, char task, long long n_w);
-int					ft_total_meals(t_philo *philos, char task, int n_w);
+/* Management */
+t_bool				ft_process_status(t_philo *philos, char cmd, t_bool n_w);
+long long			ft_last_meal(t_philo *philos, char cmd, long long n_w);
+int					ft_total_meals(t_philo *philos, char cmd, int n_w);
 
 #endif

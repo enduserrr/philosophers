@@ -6,7 +6,7 @@
 /*   By: asalo <asalo@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/06 14:10:25 by asalo             #+#    #+#             */
-/*   Updated: 2024/07/10 17:31:16 by asalo            ###   ########.fr       */
+/*   Updated: 2024/07/11 11:10:30 by asalo            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@ static void	smart_sleep(unsigned int time)
 
 	start = get_time();
 	while ((get_time() - start) < time)
-		usleep(time / 10);
+		usleep(time / 1000000);
 }
 
 long long	get_time(void)
@@ -29,12 +29,29 @@ long long	get_time(void)
 	return (tv.tv_sec * 1000 + tv.tv_usec / 1000);
 }
 
+int	put_action(t_philo *philos, char *action)
+{
+	int	state;
+
+	pthread_mutex_lock(&philos->data->writing);
+	if (ft_process_status(philos, 'g', FALSE))
+	{
+		printf("%lld %d %s\n", get_time() - philos->data->start_time,
+			philos->index, action);
+		state = 0;
+	}
+	else
+		state = 1;
+	pthread_mutex_unlock(&philos->data->writing);
+	return (state);
+}
+
 int	ft_sleep(t_philo *philo, long long time, char *action)
 {
 	long long	timer;
 	t_bool		status;
 
-	if (print_act(philo, action) == 1)
+	if (put_action(philo, action) == 1)
 		return (1);
 	status = TRUE;
 	timer = get_time();
@@ -42,7 +59,7 @@ int	ft_sleep(t_philo *philo, long long time, char *action)
 	{
 		if (get_time() - timer >= time)
 			break ;
-		status = ft_is_processing(philo, 'g', FALSE);
+		status = ft_process_status(philo, 'g', FALSE);
 		smart_sleep(50);
 	}
 	return (0);

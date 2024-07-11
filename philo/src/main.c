@@ -6,7 +6,7 @@
 /*   By: asalo <asalo@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/18 09:51:21 by asalo             #+#    #+#             */
-/*   Updated: 2024/07/10 20:15:54 by asalo            ###   ########.fr       */
+/*   Updated: 2024/07/11 10:46:01 by asalo            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,13 @@ static int	sleep_frame(t_philo *philo)
 	return (ft_sleep(philo, philo->data->time_to_sleep, SLEEP));
 }
 
-static void	philo_checker(t_philo *philo, t_philo *first)
+/**
+ * Check philos one by one if they're alive.
+ * (Is the time from last meal smaller than time_to_die).
+ * Sleeps philos for 4 milliseconds to ensure their processes have been
+ * initialized and are ready to be monitored
+ */
+static void	monitoring(t_philo *philo, t_philo *first)
 {
 	t_bool	is_processing;
 
@@ -27,7 +33,7 @@ static void	philo_checker(t_philo *philo, t_philo *first)
 	{
 		if (get_time() - ft_last_meal(philo, 'g', 0) > philo->data->time_to_die)
 		{
-			ft_is_processing(philo, 'u', FALSE);
+			ft_process_status(philo, 'u', FALSE);
 			pthread_mutex_lock(&philo->data->writing);
 			printf("%lld %d %s\n", get_time() - philo->data->start_time,
 				philo->index, DIE);
@@ -36,7 +42,7 @@ static void	philo_checker(t_philo *philo, t_philo *first)
 		philo = philo->next;
 		if (philo == NULL)
 			philo = first;
-		is_processing = ft_is_processing(philo, 'g', FALSE);
+		is_processing = ft_process_status(philo, 'g', FALSE);
 	}
 }
 
@@ -51,7 +57,7 @@ static void	*philo_routine(void *philo)
 		sleep_frame((t_philo *)philo);
 	while (1)
 	{
-		if (print_act((t_philo *)philo, THINK) == 1)
+		if (put_action((t_philo *)philo, THINK) == 1)
 			break ;
 		if (forks_up((t_philo *)philo) == 1)
 			break ;
@@ -82,7 +88,7 @@ int	main(int ac, char **av)
 		tmp = tmp->next;
 	}
 	tmp = philo;
-	philo_checker(tmp, philo);
+	monitoring(tmp, philo);
 	join_and_clean(philo);
 	return (0);
 }

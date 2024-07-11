@@ -6,7 +6,7 @@
 /*   By: asalo <asalo@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/18 10:05:45 by asalo             #+#    #+#             */
-/*   Updated: 2024/07/10 20:14:50 by asalo            ###   ########.fr       */
+/*   Updated: 2024/07/11 11:07:47 by asalo            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,17 +17,12 @@ static int	ft_atoi(const char *s)
 	unsigned long long	res;
 
 	res = 0;
-	if (!s)
-		return (0);
-	while (*s == ' ' || (*s >= 9 && *s <= 13))
-		s++;
-	if (*s == '-')
+	if (!*s)
+		return (-1);
+	if (*s < '0' || *s > '9')
 		return (-1);
 	if (*s == '0')
-	{
-		res = 0;
-		return (res);
-	}
+		return (-1);
 	while (*s)
 	{
 		if (*s >= '0' && *s <= '9')
@@ -36,12 +31,12 @@ static int	ft_atoi(const char *s)
 			return (-1);
 		s++;
 	}
-	if (res > 2147483647)
+	if (res > 1000)
 		return (-1);
 	return (res);
 }
 
-t_philo	*init_philo(t_data *data, int i)
+static t_philo	*init_philo(t_data *data, int i)
 {
 	t_philo	*philo;
 
@@ -62,7 +57,7 @@ t_philo	*init_philo(t_data *data, int i)
 	return (philo);
 }
 
-t_philo	*create_philos(t_data *data)
+static t_philo	*create_philos(t_data *data)
 {
 	t_philo	*philo;
 	t_philo	*first;
@@ -91,7 +86,7 @@ t_philo	*create_philos(t_data *data)
 	return (prev->next = NULL, first);
 }
 
-t_data	*get_data(int ac, char **av)
+static t_data	*get_data(int ac, char **av)
 {
 	t_data	*data;
 
