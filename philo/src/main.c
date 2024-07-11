@@ -6,7 +6,7 @@
 /*   By: asalo <asalo@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/18 09:51:21 by asalo             #+#    #+#             */
-/*   Updated: 2024/07/11 10:46:01 by asalo            ###   ########.fr       */
+/*   Updated: 2024/07/11 12:29:58 by asalo            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,11 +69,37 @@ static void	*philo_routine(void *philo)
 	return (NULL);
 }
 
+static void	create_fail_exit(t_philo *philo)
+{
+	t_philo	*tmp;
+	t_philo	*prev;
+
+	tmp = philo;
+	while (tmp)
+	{
+		if (pthread_join(tmp->t_id, NULL) != 0)
+			write_error(TH_JOIN);
+		tmp = tmp->next;
+	}
+	free(philo->data);
+	tmp = philo;
+	while (tmp)
+	{
+		prev = tmp;
+		free(prev->forks.right);
+		tmp = tmp->next;
+		free(prev);
+	}
+	return (write_error(TH_CREATE));
+}
+
 int	main(int ac, char **av)
 {
-	t_philo	*philo;
-	t_philo	*tmp;
+	t_philo			*philo;
+	t_philo			*tmp;
+	unsigned int	n;
 
+	n = 0;
 	if (ac != 5 && ac != 6)
 		return (write_error(ARGC), 1);
 	philo = launcher(ac, av);
@@ -84,8 +110,9 @@ int	main(int ac, char **av)
 	while (tmp)
 	{
 		if ((pthread_create(&tmp->t_id, NULL, &philo_routine, tmp)))
-			break ;
+			return (create_fail_exit(philo), 1);
 		tmp = tmp->next;
+		n++;
 	}
 	tmp = philo;
 	monitoring(tmp, philo);

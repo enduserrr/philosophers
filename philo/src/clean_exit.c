@@ -6,7 +6,7 @@
 /*   By: asalo <asalo@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/06 14:14:52 by asalo             #+#    #+#             */
-/*   Updated: 2024/07/10 20:16:07 by asalo            ###   ########.fr       */
+/*   Updated: 2024/07/11 12:28:38 by asalo            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,8 @@ void	join_and_clean(t_philo *philo)
 	tmp = philo;
 	while (tmp)
 	{
-		pthread_join(tmp->t_id, NULL);
+		if (pthread_join(tmp->t_id, NULL) != 0)
+			write_error(TH_JOIN);
 		tmp = tmp->next;
 	}
 	free(philo->data);

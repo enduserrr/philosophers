@@ -6,7 +6,7 @@
 /*   By: asalo <asalo@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/18 09:47:10 by asalo             #+#    #+#             */
-/*   Updated: 2024/07/11 11:10:37 by asalo            ###   ########.fr       */
+/*   Updated: 2024/07/11 12:30:52 by asalo            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,8 +24,8 @@
 # define ARGC "Incorrect argument count."
 # define INPUT "Invalid input."
 # define MTX "Mutex init fail."
-# define TH_CREATE
-# define TH_JOIN
+# define TH_CREATE "Thread creation fail."
+# define TH_JOIN "Thread join fail."
 # define ALLOC "Memory allocation fail."
 
 /* Action msg */
@@ -88,11 +88,13 @@ void				join_and_clean(t_philo *philo);
 int					forks_down(pthread_mutex_t *right, pthread_mutex_t *left);
 int					forks_up(t_philo *philo);
 int					eat(t_philo *philo);
-t_philo				*launcher(int ac, char **av);
 
 /* Management */
 t_bool				ft_process_status(t_philo *philos, char cmd, t_bool n_w);
 long long			ft_last_meal(t_philo *philos, char cmd, long long n_w);
 int					ft_total_meals(t_philo *philos, char cmd, int n_w);
+
+/* Inits */
+t_philo				*launcher(int ac, char **av);
 
 #endif
