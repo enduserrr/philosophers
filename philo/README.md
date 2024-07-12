@@ -1,6 +1,6 @@
 # PHILO
 
-This project is an implementation of Edsger Dijkstra's dining philosophers problem using threads and mutexes in C.
+This project is an implementation of Edsger Dijkstra's dining philosophers problem using threads and mutexes in C programming language.
 
 ## Description
 
