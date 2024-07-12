@@ -6,23 +6,26 @@
 /*   By: asalo <asalo@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/18 09:51:21 by asalo             #+#    #+#             */
-/*   Updated: 2024/07/11 12:29:58 by asalo            ###   ########.fr       */
+/*   Updated: 2024/07/12 09:55:32 by asalo            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../incs/philo.h"
 
+/**
+ * @brief	Puts a philosopher to sleep for the specified time.
+*/
 static int	sleep_frame(t_philo *philo)
 {
 	return (ft_sleep(philo, philo->data->time_to_sleep, SLEEP));
 }
 
 /**
- * Check philos one by one if they're alive.
- * (Is the time from last meal smaller than time_to_die).
- * Sleeps philos for 4 milliseconds to ensure their processes have been
- * initialized and are ready to be monitored
- */
+ * @brief	Monitors each philo to check if they are alive by comparing
+ *			the time from their last meal to the time_to_die. 
+ *			Sleeps for 4 ms initially to ensure processes are ready.
+ *			Prints a message if a philo dies.
+*/
 static void	monitoring(t_philo *philo, t_philo *first)
 {
 	t_bool	is_processing;
@@ -47,10 +50,10 @@ static void	monitoring(t_philo *philo, t_philo *first)
 }
 
 /**
- * Function checking when to break philo loop.
- * First if() checks for philos with even index nb and put's them to sleep.
- * Next while(1) starts and let's the process run over until it's broken.
- */
+ * @brief	The routine for each philo thread. Even-indexed philos sleep first.
+ *			The loop continues with the philo thinking, picking up forks,
+ *			eating, and sleeping, breaking if any action fails.
+*/
 static void	*philo_routine(void *philo)
 {
 	if (((t_philo *)philo)->index % 2 == 0)
@@ -69,6 +72,10 @@ static void	*philo_routine(void *philo)
 	return (NULL);
 }
 
+/**
+ * @brief	Handles cleanup and error reporting if thread creation fails.
+ *			Joins all threads and frees allocated memory.
+*/
 static void	create_fail_exit(t_philo *philo)
 {
 	t_philo	*tmp;
@@ -93,13 +100,16 @@ static void	create_fail_exit(t_philo *philo)
 	return (write_error(TH_CREATE));
 }
 
+/**
+ * @brief	Entry point of the program. Check arg count,
+ *			call for launcher() to initiate structs, threads
+ *			and mutexes. Cleans up before exitting.
+*/
 int	main(int ac, char **av)
 {
 	t_philo			*philo;
 	t_philo			*tmp;
-	unsigned int	n;
 
-	n = 0;
 	if (ac != 5 && ac != 6)
 		return (write_error(ARGC), 1);
 	philo = launcher(ac, av);
@@ -112,7 +122,6 @@ int	main(int ac, char **av)
 		if ((pthread_create(&tmp->t_id, NULL, &philo_routine, tmp)))
 			return (create_fail_exit(philo), 1);
 		tmp = tmp->next;
-		n++;
 	}
 	tmp = philo;
 	monitoring(tmp, philo);

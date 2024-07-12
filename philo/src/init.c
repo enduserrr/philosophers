@@ -6,12 +6,16 @@
 /*   By: asalo <asalo@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/18 10:05:45 by asalo             #+#    #+#             */
-/*   Updated: 2024/07/11 12:31:03 by asalo            ###   ########.fr       */
+/*   Updated: 2024/07/12 10:02:46 by asalo            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../incs/philo.h"
 
+/**
+ * @brief	Given string to an int with error handling for invalid
+ *			or out-of-range inputs.
+*/
 static int	ft_atoi(const char *s)
 {
 	unsigned long long	res;
@@ -36,6 +40,10 @@ static int	ft_atoi(const char *s)
 	return (res);
 }
 
+/**
+ * @brief	Initializes a philo, allocating memory, setting initial values,
+ *			and initializing mutexes.
+*/
 static t_philo	*init_philo(t_data *data, int i)
 {
 	t_philo	*philo;
@@ -57,6 +65,10 @@ static t_philo	*init_philo(t_data *data, int i)
 	return (philo);
 }
 
+/**
+ * @brief	Creates a circular linked list of philos,
+ *			initializing each one and linking their forks.
+*/
 static t_philo	*create_philos(t_data *data)
 {
 	t_philo	*philo;
@@ -86,6 +98,10 @@ static t_philo	*create_philos(t_data *data)
 	return (prev->next = NULL, first);
 }
 
+/**
+ * @brief	Parse given arguments into a t_data structure,
+ *			validate input values and set initial parameters.
+*/
 static t_data	*get_data(int ac, char **av)
 {
 	t_data	*data;
@@ -111,6 +127,11 @@ static t_data	*get_data(int ac, char **av)
 	return (data);
 }
 
+/**
+ * @brief	Orchestrate the init process and
+ *			(calling 'get_data()' and 'create_philos()')
+ *			set up initial conditions and mutexes.
+*/
 t_philo	*launcher(int ac, char **av)
 {
 	t_philo	*philo;

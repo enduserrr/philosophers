@@ -6,7 +6,7 @@
 /*   By: asalo <asalo@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/06 14:10:25 by asalo             #+#    #+#             */
-/*   Updated: 2024/07/11 11:10:30 by asalo            ###   ########.fr       */
+/*   Updated: 2024/07/12 10:14:34 by asalo            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,10 @@ long long	get_time(void)
 	return (tv.tv_sec * 1000 + tv.tv_usec / 1000);
 }
 
+/**
+ * @brief	Prints the action of the philosopher if the process running,
+ *			else returns an error state (1).
+*/
 int	put_action(t_philo *philos, char *action)
 {
 	int	state;
@@ -46,6 +50,11 @@ int	put_action(t_philo *philos, char *action)
 	return (state);
 }
 
+/**
+ * @brief	Puts a philo to sleep for a specified duration
+ *			and checks the process status periodically
+ *			and perform the sleep action.
+*/
 int	ft_sleep(t_philo *philo, long long time, char *action)
 {
 	long long	timer;

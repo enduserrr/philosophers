@@ -6,12 +6,16 @@
 /*   By: asalo <asalo@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/04/21 14:19:10 by asalo             #+#    #+#             */
-/*   Updated: 2024/07/11 09:43:03 by asalo            ###   ########.fr       */
+/*   Updated: 2024/07/12 10:07:31 by asalo            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../incs/philo.h"
 
+/**
+ * @brief	Unlocks the right and left forks (mutexes)
+ *			to signal that the philo has put down the forks.
+*/
 int	forks_down(pthread_mutex_t *right, pthread_mutex_t *left)
 {
 	if (right != NULL)
@@ -21,6 +25,11 @@ int	forks_down(pthread_mutex_t *right, pthread_mutex_t *left)
 	return (0);
 }
 
+/**
+ * @brief	Locks the right fork, checks action status,
+ *			handles single philosopher scenario,
+ *			locks the left fork, and checks action status again.
+*/
 int	forks_up(t_philo *philo)
 {
 	pthread_mutex_lock(philo->forks.right);
@@ -44,6 +53,11 @@ int	forks_up(t_philo *philo)
 	return (0);
 }
 
+/**
+ * @brief	Updates the last meal time, performs eating act,
+ *			sleeps for eating duration,
+ *			and updates meal goal counters if applicable.
+*/
 int	eat(t_philo *philo)
 {
 	ft_last_meal(philo, 'u', get_time());
